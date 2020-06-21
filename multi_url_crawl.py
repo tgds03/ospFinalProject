@@ -95,12 +95,11 @@ def crawl_multiple(_list = None):
 		v = multi_crawl_every_words(url)
 		vector_list.append(v)
 	
-	idf_d = compute_idf()
-	for words in word_list:
-		tf_d = compute_tf(words)
-	
 	#user input
 	index = int(input("Input index >> "))
+
+	idf_d = compute_idf()
+	tf_d = compute_tf(word_list[index])
 
 	for vector in vector_list:
 		dotpro = numpy.dot(vector, vector_list[index])
