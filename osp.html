@@ -1,0 +1,103 @@
+<html>
+		<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+	<head>
+		<title> team13 final project </title>
+		<style>
+			.in_url{
+			height:0px; 
+			text-align:left;
+			font-size:30px;
+			}
+			
+			.in_file{
+			height: 170px;
+			font-size : 30px;
+			text-align : left;
+			border-bottom : 1px solid black;
+			}
+			.url_bu{
+			font-size:20px;
+			}
+			.url_box{
+			height :30px;
+			width : 1000px;
+			}
+			.txt_sel{
+			font-size:20px;
+			}
+			
+			.url_list{
+			font-size : 15px;
+			color: #0366d6;
+			margin-bottom : 10px;
+			text-align:justify;
+			border : 0.5px solid blue;
+			padding: 15px;
+			}
+			.li_bu{
+			font-size : 15px;
+			}
+			
+		</style>
+	</head>
+
+	<body>
+		<div class="in_url">
+			<label for="page">Add url on the list</label>
+			
+			<input type="url" class ="url_box" id="homepage" name="homepage"/>
+		
+		
+			
+			<button id="url_button" class="url_bu" onclick="add_url();" name="submit">url 추가</button>
+		</div>
+		
+		<div class="in_file">
+			<br> </br>
+			<button onclick = "openTextFile()"> Open</button>
+		</div>
+		<div id="output">File Contents Area </div>
+		<div>
+		<ul = id='list'>
+			
+		</ul>
+		</div>
+
+		<script>
+		function add_url() {
+			$("#list").append("<li class=url_list>"+$("#homepage").val()+"<button class=li_bu>유사도분석</button>	<button class=li_bu>단어분석</button></li>");
+			}
+		</script>
+		
+		<script type="text/javascript">
+        function openTextFile(){
+		var input = document.createElement("input");
+		
+		input.type="file";
+		input.accept= "text/plain, text/html, .jsp";
+		input.click();
+		input.onchange = function(event){
+			processFile(event.target.files[0]);
+		};
+		}
+		function processFile(file){
+			var reader = new FileReader();
+			reader.readAsText(file,"UTF-8");
+			
+			reader.onload = function(){
+			var url_string = reader.result;
+			var split_url = url_string.split('\n');
+			for (var i in split_url) {
+				$("#list").append("<li class=url_list>"+ split_url[i] +"<button class=li_bu>유사도분석</button>	<button class=li_bu>단어분석</button></li>");
+				}
+			};
+			}
+		</script>
+
+
+		
+		
+	</body>
+
+
+</html>
