@@ -25,6 +25,12 @@ bow = set()
 #a list for storing words for each url
 word_list = []
 
+def check_duplicate(_list):
+	temp = 0
+	if sorted(set(_list)) == sorted(_list):
+		temp = 1
+	return temp
+
 def compute_tf(words):
 	temp = set()
 	temp_wordcount = {}
@@ -57,6 +63,7 @@ def compute_idf():
 
 def make_word_d(url = None):
 	temp_list = []
+	start = time.time()
 	page = requests.get(url)
 	soup = BeautifulSoup(page.content, 'html.parser')
 	
@@ -73,7 +80,7 @@ def make_word_d(url = None):
 		word_d[word] += 1
 		bow.add(word)
 		temp_list.append(word)
-	
+	print("{ url } : ", url, "  { number of words } : ", len(temp_list), "  { time(second) } : ", time.time() - start)
 	word_list.append(temp_list)
 
 def crawl_multiple(_list = None):
@@ -86,21 +93,24 @@ def crawl_multiple(_list = None):
 	
 	for url in _list:
 		url_list.append(url)
-
 		#build word_d dictionary and word_list list
 		make_word_d(url)
-	
+
+	#check duplicates
+	if check_duplicate(url_list) == 0:
+		print("\nDuplicate url found.")
+	else:
+		print("\nNo duplicates.")
+
 	for url in _list:
 		#multi_crawl_every_words : A function that produces vector by crawling its parameter url
 		v = multi_crawl_every_words(url)
 		vector_list.append(v)
 	
 	#user input
-	index = int(input("Input index >> "))
+	index = int(input("\nInput index >> "))
 
-	idf_d = compute_idf()
-	tf_d = compute_tf(word_list[index])
-
+	#calculate cosine similarity value
 	for vector in vector_list:
 		dotpro = numpy.dot(vector, vector_list[index])
 		norms = numpy.linalg.norm(vector) * numpy.linalg.norm(vector_list[index])
@@ -123,8 +133,12 @@ def crawl_multiple(_list = None):
 		count+=1
 		if(count==3):
 			break
+
+	#calculate tf-idf value
+	idf_d = compute_idf()
+	tf_d = compute_tf(word_list[index])
 	
-	#store word and its tf-idf value in tfidf dictionary
+	#store words and its tf-idf value in tfidf dictionary
 	for word, tfval in tf_d.items():
 		tfidf[word] = tfval*idf_d[word]
 	
