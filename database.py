@@ -1,4 +1,5 @@
 from elasticsearch import Elasticsearch
+import math
 import numpy
 
 class Document:
@@ -8,6 +9,7 @@ class Document:
 		# 	"tfidf" : "value"
 		# }
 	}
+	word_count = 0,
 	url = ''
 	cos_similarity = {
 		"norm" : -1,
@@ -19,8 +21,30 @@ class Document:
 	def __init__(self, url:str):
 		self.url = url
 
-	def insert_word(self, word:str, count:int, tfidf:float):
-		self.word_freq[word] = {"count":count, "tfidf":tfidf}
+	#record words to word_freq
+	def insert_word(self, word:str, count:int):
+		self.word_freq[word] = {"count":count, "tfidf":-1}
+		self.word_count += count
+
+	def insert_words(self, **wordlist:{str:int}):
+		for word in wordlist.keys():
+			self.insert_word(word, wordlist[word])
+
+
+	#calculate tfidf, using total word freq in documentES
+	def calculate_tfidf(self, documentES:'DocumentES'):
+		for word in self.word_freq.keys():
+			self.word_freq[word]['tfidf'] = self.calculate_tf(word) / self.calculate_idf(word, documentES)
+
+	def calculate_tf(self, word:str):
+		return self.word_freq[word] / self.word_count
+
+	#to get document which has a word, search by using elasticsearch
+	def calculate_idf(self, word:str, documentES:'DocumentES'):
+		res = documentES.search(index='osp', body={'query':{'term':{'word_freq':word}}}, filter_path='hits.total.value')
+		docHasWordNum = res['hits']['total']['value']
+		return math.log10(documentES.total_info['url_count'] / docHasWordNum)
+
 
 	#calculate vector (of word) norm. it will be stored in document
 	def calculate_norm(self):
@@ -50,6 +74,7 @@ class Document:
 		other.cos_similarity['data'][self.url] = cosSimilarity
 		return cosSimilarity
 
+
 	def convert_to_dict(self):
 		return {"word_freq":self.word_freq, "url":self.url, "cos_similarity":self.cos_similarity}
 
@@ -62,14 +87,15 @@ def convert_to_document(data:dict):
 class DocumentES(Elasticsearch):
 	es :Elasticsearch
 	doc_count = 0
-	url_list = []
 
 	total_info = {
 		"total_word_freq" : {
 			# "word" : "count"
 		},
 		"total_word_kinds" : 0,
-		"total_word_count" : 0
+		"total_word_count" : 0,
+		"url_list" : [],
+		"url_count" : 0
 	}
 
 	def __init__(self, host:str = '127.0.0.1', port:str = '9200'):
@@ -85,6 +111,19 @@ class DocumentES(Elasticsearch):
 		self.es.indices.create(index=indexName)
 
 
+	#record word info to total_word_freq
+	def insert_word(self, word:str, count:int):
+		if word not in self.total_info["total_word_freq"]:
+			self.total_info["total_word_freq"][word] = 0
+			self.total_info["total_word_kinds"] += 1
+		self.total_info["total_word_freq"][word] += count
+		self.total_info["total_word_count"] += count
+
+	def insert_words(self, **wordlist:{str,int}):
+		for word in wordlist.keys():
+			self.insert_word(word, wordlist[word])
+
+
 	#when deal with document, it required to convert type dict-Document
 	#insert document to database
 	def insert_document(self, doc:Document):
@@ -97,8 +136,8 @@ class DocumentES(Elasticsearch):
 
 
 	#update total data in database
-	def update_total(self, data:dict):
-		return self.es.index(index='total', body=data, id='total')
+	def update_total(self):
+		return self.es.index(index='total', body=self.total_info, id='total')
 
 	#load total data in database
 	def load_total(self):
