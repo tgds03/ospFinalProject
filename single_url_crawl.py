@@ -40,8 +40,11 @@ def single_url_crawl(url=None):
 		word_info['data'][word] = text.count(word)
 		word_count += word_info['data'][word]
 	
-	word_info['time'] = float(time.time()-start)
+	execution_time = float(time.time() - start)
+	
+	word_info['time'] = execution_time
 
+	print(word_info)
 	return word_info
 
 if __name__ == '__main__':
