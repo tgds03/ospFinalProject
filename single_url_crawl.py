@@ -7,8 +7,16 @@ from bs4 import BeautifulSoup
 
 def single_url_crawl(url=None):
 
-	#a list to include words in html(allow duplication)
-	word_info = {}
+	#a list to include words in html(allow duplication) and execution time
+	word_info = {
+					'time' : {
+								#execution time
+						},
+					'data' : {
+								#'word' : 'frequency'
+						}
+		}
+
 	word_count = 0
 	
 	#crawling time measurement
@@ -29,14 +37,10 @@ def single_url_crawl(url=None):
 	text = text.split()
 
 	for word in text:
-		word_info[word] = text.count(word)
-		word_count += word_info[word]
-
-	print("\nNumber of words : ", len(word_info), end='\n')
-	print(word_info)
-
-	#The 'time.time()' (current time) minus 'start' is the execution time
-	print("\ncrawl time(second) : {0:0.2f}".format(time.time()-start))
+		word_info['data'][word] = text.count(word)
+		word_count += word_info['data'][word]
+	
+	word_info['time'] = float(time.time()-start)
 
 	return word_info
 
