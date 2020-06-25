@@ -36,15 +36,15 @@ def single_url_crawl(url=None):
 	text = re.sub(r'[^\s^A-Za-z0-9]', '', text)
 	text = text.split()
 
+	#calculate execution time(crawling time) and insert it in dictionary
+	execution_time = float(time.time() - start)
+	word_info['time'] = execution_time
+
+	#insert word and its frequency in dictionary
 	for word in text:
 		word_info['data'][word] = text.count(word)
 		word_count += word_info['data'][word]
 	
-	execution_time = float(time.time() - start)
-	
-	word_info['time'] = execution_time
-
-	print(word_info)
 	return word_info
 
 if __name__ == '__main__':
