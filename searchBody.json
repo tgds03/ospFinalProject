@@ -1,0 +1,14 @@
+{
+	"query" : {
+		"nested" : {
+			"path" : "word_freq",
+			"query" : {
+				"bool" : {
+					"must" : {
+						"match" : {"word_freq.word" : ""}
+					}
+				}
+			}
+		}
+	}
+}

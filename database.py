@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 import math
+import json
 import numpy
 
 class Document:
@@ -36,7 +37,9 @@ class Document:
 	#calculate tfidf, using total word freq in documentES
 	def calculate_tfidf(self, documentES:'DocumentES'):
 		for word in self.word_freq.keys():
-			self.word_freq[word]['tfidf'] = self.calculate_tf(word) / self.calculate_idf(word, documentES)
+			tf = self.calculate_tf(word)
+			idf = self.calculate_idf(word, documentES)
+			self.word_freq[word]['tfidf'] = tf * idf
 
 	def calculate_tf(self, word:str):
 		return self.word_freq[word]['count'] / self.word_count
@@ -44,14 +47,18 @@ class Document:
 	#to get document which has a word, search by using elasticsearch
 	def calculate_idf(self, word:str, documentES:'DocumentES'):
 		word = word.lower()	#term search work only lowercase
-		res = documentES.es.search(index='osp', body={'query':{'term':{'word_freq':word}}}, filter_path='hits.total.value')
-		docHasWordNum = res['hits']['total']['value']
-		return math.log10(documentES.total_info['url_count'] / docHasWordNum)
-
+		
+		searchBody = documentES.termSearchbody
+		searchBody['query']['nested']['query']['bool']['must']['match']['word_freq.word'] = word
+		docHasWordNum = 0
+		while(docHasWordNum == 0):
+			res = documentES.es.search(index='osp', body=searchBody, filter_path='hits.total.value')
+			docHasWordNum = res['hits']['total']['value']
+		return math.log10(len(documentES.total_info['url_list']) / docHasWordNum)
 
 	#calculate vector (of word) norm. it will be stored in document
 	def calculate_norm(self):
-		self.cos_similarity['norm'] = numpy.linalg.norm([word['count'] for word in self.word_freq])
+		self.cos_similarity['norm'] = numpy.linalg.norm([self.word_freq[word]['count'] for word in self.word_freq])
 
 	#calcultate similarity with another document(other).
 	#this value is stored in document with other's url
@@ -83,6 +90,7 @@ class Document:
 		for word in self.word_freq.keys():
 			info = self.word_freq[word]
 			data["word_freq"].append( {"word":word, "count":info['count'], 'tfidf':info['tfidf']} )
+		print(data)
 		return data
 
 def convert_to_document(data:dict):
@@ -105,14 +113,21 @@ class DocumentES(Elasticsearch):
 		"total_word_kinds" : 0,
 		"total_word_count" : 0,
 		"url_list" : [],
-		"url_count" : 0
 	}
+	termSearchbody = None
 
 	def __init__(self, host:str = '127.0.0.1', port:str = '9200'):
 		self.es = Elasticsearch([{'host':host, 'port':port}], timeout=30)
 		self.init_index('total')
 		self.init_index('osp')
 		self.es.index(index='total', id='total', body=self.total_info)
+		with open('ospMappings.json', 'r') as f:
+			# mapping = {"document" : json.load(f)}
+			mapping = json.load(f)
+			print(mapping)
+			self.es.indices.put_mapping(index='osp', body=mapping)
+		with open('searchBody.json', 'r') as f:
+			self.termSearchbody = json.load(f)
 		# self.es.indices.put_settings(index='osp', body={"index.mapping.total_fields.limit": 5000})
 
 	#used for initiating database
@@ -139,11 +154,12 @@ class DocumentES(Elasticsearch):
 	#when deal with document, it required to convert type dict-Document
 	#insert document to database
 	def insert_document(self, doc:Document):
-		return self.es.index(index='osp', doc_type='document', body=doc.convert_to_dict(), id=doc.url)
+		# return self.es.create(index='osp', body=doc.convert_to_dict(), id=doc.url)
+		return self.es.index(index='osp', body=doc.convert_to_dict(), id=doc.url)
 
 	#load document from database
 	def load_document(self, url:str)->Document:
-		res = self.es.get(index='osp', id =url, filter_path='hits.hits')
+		res = self.es.get(index='osp', doc_type='_doc', id=url)
 		return convert_to_document(res['_source'])
 
 
@@ -166,7 +182,8 @@ if __name__=="__main__":
 	documents = [Document(url) for url in urllist]
 	
 	for doc in documents:
-		wordfreq = single_url_crawl(doc.url)
+		crawled = single_url_crawl(doc.url)
+		wordfreq = crawled['data']
 		doc.insert_words(wordfreq)
 		doc_es.insert_words(wordfreq)
 		doc_es.total_info['url_list'].append(doc.url)
@@ -177,9 +194,9 @@ if __name__=="__main__":
 
 	for doc in documents:
 		doc.calculate_tfidf(doc_es)
-		for url in total['url_list']:
-			if url == doc.url: continue
-			doc.calculate_similarity(url)
+		for otherDoc in documents:
+			if doc == otherDoc: continue
+			doc.calculate_similarity(otherDoc)
 		doc_es.insert_document(doc)
 
 	print( doc_es.load_document(urllist[0]).word_freq )

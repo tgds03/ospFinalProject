@@ -1,0 +1,46 @@
+{
+	"properties" : {
+	"cos_similarity" : {
+		"properties" : {
+			"data" : {
+				"type" : "object"
+			},
+			"norm" : {
+				"type" : "long"
+			}
+		}
+	},
+	"url" : {
+		"type" : "text",
+		"fields" : {
+			"keyword" : {
+				"type" : "keyword",
+				"ignore_above" : 256
+			}
+		}
+	},
+	"word_count" : {
+		"type" : "long"
+	},
+	"word_freq" : {
+		"type" : "nested",
+		"properties" : {
+			"count" : {
+				"type" : "long"
+			},
+			"tfidf" : {
+				"type" : "long"
+			},
+			"word" : {
+				"type" : "text",
+				"fields" : {
+					"keyword" : {
+						"type" : "keyword",
+						"ignore_above" : 256
+						}
+					}
+				}
+			}
+		}
+	}
+}
