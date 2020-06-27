@@ -130,7 +130,6 @@ class DocumentES(Elasticsearch):
 		with open('ospMappings.json', 'r') as f:
 			# mapping = {"document" : json.load(f)}
 			mapping = json.load(f)
-			print(mapping)
 			self.es.indices.put_mapping(index='osp', body=mapping)
 		with open('searchBody.json', 'r') as f:
 			self.termSearchbody = json.load(f)
@@ -184,7 +183,7 @@ from single_url_crawl import single_url_crawl
 
 if __name__=="__main__":
 	doc_es = DocumentES()
-	urllist = ['http://jackrabbit.apache.org/jcr/index.html','http://parquet.apache.org/','http://qpid.apache.org/','http://rya.apache.org/','http://unomi.apache.org/']
+	urllist = ['http://jackrabbit.apache.org/jcr/index.html','http://parquet.apache.org/','http://qpid.apache.org/','http://rya.apache.org/','http://unomi.apache.org/', 'https://sites.google.com/site/teleoliseuteu/']
 	documents = [Document(url) for url in urllist]
 	
 	#crawl received urls
@@ -211,6 +210,7 @@ if __name__=="__main__":
 			doc.calculate_similarity(otherDoc)
 		doc_es.insert_document(doc)
 
-	
-	print( doc_es.load_document(urllist[int(input())]).word_freq )
-	
+	print( "input index > ")
+	doc = doc_es.load_document(urllist[int(input())])
+	print( doc.word_freq )
+	print( doc.cos_similarity )
