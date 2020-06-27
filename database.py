@@ -4,24 +4,23 @@ import json
 import numpy
 
 class Document:
-	word_freq = {
+
+	def __init__(self, url:str):
+		self.url = url
+		self.word_freq = {
 		# "word" : {
 		# 	"count" : "value", 
 		# 	"tfidf" : "value"
 		# }
-	}
-	#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
-	word_count = 0
-	url = ''
-	cos_similarity = {
-		"norm" : -1,
-		"data" : {
-			# "url" : "value"
 		}
-	}
-
-	def __init__(self, url:str):
-		self.url = url
+		#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
+		self.word_count = 0
+		self.cos_similarity = {
+			"norm" : -1,
+			"data" : {
+				# "url" : "value"
+			}
+		}
 
 	#record words to word_freq
 	def insert_word(self, word:str, count:int):
@@ -56,9 +55,11 @@ class Document:
 			docHasWordNum = res['hits']['total']['value']
 		return math.log10(len(documentES.total_info['url_list']) / docHasWordNum)
 
+
 	#calculate vector (of word) norm. it will be stored in document
 	def calculate_norm(self):
-		self.cos_similarity['norm'] = numpy.linalg.norm([self.word_freq[word]['count'] for word in self.word_freq])
+		values = [self.word_freq[word]['count'] for word in self.word_freq]
+		self.cos_similarity['norm'] = numpy.linalg.norm(values)
 
 	#calcultate similarity with another document(other).
 	#this value is stored in document with other's url
@@ -204,5 +205,6 @@ if __name__=="__main__":
 			doc.calculate_similarity(otherDoc)
 		doc_es.insert_document(doc)
 
-	print( doc_es.load_document(urllist[0]).word_freq )
+	
+	print( doc_es.load_document(urllist[int(input())]).word_freq )
 	
