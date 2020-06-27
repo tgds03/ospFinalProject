@@ -13,6 +13,7 @@ class Document:
 		# 	"tfidf" : "value"
 		# }
 		}
+		self.crawl_time = 0
 		#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
 		self.word_count = 0
 		self.cos_similarity = {
@@ -21,6 +22,10 @@ class Document:
 				# "url" : "value"
 			}
 		}
+
+	#record crawling, parsing time
+	def record_time(self, time:float):
+		self.crawl_time = time
 
 	#record words to word_freq
 	def insert_word(self, word:str, count:int):
@@ -85,19 +90,19 @@ class Document:
 		other.cos_similarity['data'][self.url] = cosSimilarity
 		return cosSimilarity
 
-
+	#convert to instance <-> index query
 	def convert_to_dict(self):
-		data = {"word_freq":[], "word_count":self.word_count, "url":self.url, "cos_similarity":self.cos_similarity}
+		data = {"word_freq":[], "word_count":self.word_count, "url":self.url, "cos_similarity":self.cos_similarity, "crawl_time":self.crawl_time}
 		for word in self.word_freq.keys():
 			info = self.word_freq[word]
 			data["word_freq"].append( {"word":word, "count":info['count'], 'tfidf':info['tfidf']} )
-		print(data)
 		return data
 
 def convert_to_document(data:dict):
 	doc = Document(data['url'])
 	doc.cos_similarity = data['cos_similarity']
 	doc.word_freq = {}
+	doc.crawl_time = data['crawl_time']
 	for info in data['word_freq']:
 		doc.word_freq[info['word']] = {"count":info['count'], 'tfidf':info['tfidf']}
 	return doc
@@ -188,6 +193,7 @@ if __name__=="__main__":
 		crawled = single_url_crawl(doc.url)
 		wordfreq = crawled['data']
 		doc.insert_words(wordfreq)
+		doc.record_time(crawled['time'])
 		doc_es.insert_words(wordfreq)
 		doc_es.total_info['url_list'].append(doc.url)
 		doc_es.insert_document(doc)
