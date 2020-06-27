@@ -181,6 +181,8 @@ if __name__=="__main__":
 	urllist = ['http://jackrabbit.apache.org/jcr/index.html','http://parquet.apache.org/','http://qpid.apache.org/','http://rya.apache.org/','http://unomi.apache.org/']
 	documents = [Document(url) for url in urllist]
 	
+	#crawl received urls
+	#maybe it will be executed as soon as receiving urls
 	for doc in documents:
 		crawled = single_url_crawl(doc.url)
 		wordfreq = crawled['data']
@@ -192,6 +194,9 @@ if __name__=="__main__":
 	doc_es.update_total()
 	total = doc_es.es.get(index='total', id='total', filter_path='_source')['_source']
 
+
+	#update urls similarity, tf-dif
+	#maybe it will be executed by click buttons 
 	for doc in documents:
 		doc.calculate_tfidf(doc_es)
 		for otherDoc in documents:
