@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html>
+
+		<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
+	<head>
+
+		<title> team13 final project </title>
+
+		<style>
+
+			.in_url{
+
+			height:0px; 
+
+			text-align:left;
+
+			font-size:30px;
+
+			}
+
+			
+
+			.in_file{
+
+			height: 170px;
+
+			font-size : 30px;
+
+			text-align : left;
+
+			border-bottom : 1px solid black;
+
+			}
+
+			.url_bu{
+
+			font-size:20px;
+
+			}
+
+			.url_box{
+
+			height :30px;
+
+			width : 1000px;
+
+			}
+
+			.txt_sel{
+
+			font-size:20px;
+
+			}
+
+			
+
+			.url_list{
+
+			font-size : 15px;
+
+			/* color: #0366d6; */
+
+			background-color: #bddcff;
+
+			text-align:justify;
+
+			padding: 15px;
+
+			}
+
+
+
+			.li_bu{
+
+			font-size : 15px;
+
+			}
+
+
+
+			table, td {
+
+			border-collapse: collapse;
+
+			}
+
+
+
+			td {
+
+			padding: 15px;
+
+			border : solid rgb(0, 0, 255);
+
+			border-width: 1px 0px 0px 0px;
+
+			}
+
+			
+
+		</style>
+
+	</head>
+
+
+
+	<body>
+
+		<div class="in_url">
+
+
+
+			<label for="page">Add url on the list</label>
+
+			
+
+			<form method="POST" action="/addurl">
+
+				<input type="text" class ="url_box" id="homepage" name="homepage"/>
+				<button id="url_button" class="url_bu" onclick="is_duplicate()" type="submit">APPEND URL</button>
+				<input type="submit"/>
+				
+			</form>
+
+		</div>
+
+		
+
+		<div class="in_file">
+
+			<br> </br>
+
+			<button onclick = "openTextFile()"> Open</button>
+
+		</div>
+
+
+
+		<div id="output">URL List </div>
+
+		<div>
+			
+			<table id="list">
+				<p>APPEND URL!</p>
+				{% if n == 1 %}
+					<tr class='url_list'> <td class='url_list_text'>{{_url}}</td> <td>Time : {{"{0:0.2f}".format(_time)}} ( second )</td> <td>Number of words : {{_count}}</td> <td>SUCCESS</td> <td><button class=li_bu onclick=sim_popup()>유사도분석</button></td> <td><button class=li_bu onclick=word_popup()>단어분석</button> </td> </tr>
+				{% elif n == -1 %}
+					<p>CRAWLING FAILED!</p>
+				{% endif %}
+
+			</table>
+
+		</div>
+
+
+
+		<script>
+
+		
+
+		function is_duplicate(){
+
+			var flag = false;
+
+			var inputdata = $("#homepage").val()
+
+			$("#list").find('.url_list_text').each(function() {
+
+                if($(this).text().replace(/\r/g, "") == inputdata){
+
+                        flag = true;
+
+						alert("중복된 URL 입니다");
+
+                    }
+
+                }
+
+            );
+
+			return flag;
+
+		}
+
+		
+
+		function add_url(inputdata) {
+
+			var temp = inputdata.replace(/\r/g, "");
+
+            if ( !is_duplicate(temp) ) {
+
+				formtag = '<form method="POST" action="similar">'
+
+				urltext = '<span class=url_list_text name="url" id='+temp+'>'+temp+"</span>"
+
+				similarityButton = "<button class=li_bu onclick=sim_popup()>유사도분석</button>"
+
+				analysisButton = "<button class=li_bu onclick=word_popup()>단어분석</button>"
+
+                $("#list").append("<li class=url_list>"+ urltext + similarityButton + analysisButton + "</li>");
+
+            }
+
+        }
+
+		
+
+        function openTextFile(){
+
+			var input = document.createElement("input");
+
+		
+
+			input.type="file";
+
+			input.accept= "text/plain, text/html, .jsp";
+
+			input.click();
+
+			input.onchange = function(event){
+
+				processFile(event.target.files[0]);
+
+			};
+
+		}
+
+		
+
+		function processFile(file){
+
+			var reader = new FileReader();
+
+			reader.readAsText(file,"UTF-8");
+
+			
+
+			reader.onload = function(){
+
+				var url_string = reader.result;
+
+				var split_url = url_string.split('\n');
+
+				for (var i =0;i<split_url.length; i++){
+
+					add_url(split_url[i]);
+
+				}
+
+			};
+
+         }
+
+		 function sim_popup() { window.open("similar_analysis_pop.html", "similar_popup", "width=400, height=300, left=100, top=50"); }
+
+		 function word_popup() { window.open("word_analysis_pop.html", "word_popup", "width=400, height=300, left=100, top=50"); }
+
+		 
+
+		</script>
+
+
+
+
+
+		
+
+		
+
+	</body>
+
+
+
+
+
+</html>
