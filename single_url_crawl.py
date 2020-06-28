@@ -22,7 +22,11 @@ def single_url_crawl(url=None):
 	#crawling time measurement
 	start = time.time()
 	
-	page = requests.get(url)
+	try:
+		page = requests.get(url)
+	except Exception as e:
+		raise e
+
 	soup = BeautifulSoup(page.content, 'html.parser')
 
 	#Remove all style, scripts tag in html

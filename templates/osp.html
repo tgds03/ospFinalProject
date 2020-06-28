@@ -26,13 +26,22 @@
 			.txt_sel{
 			font-size:20px;
 			}
-			
-			.url_list{
+
+			.url_list, .url_list_error{
 			font-size : 15px;
 			/* color: #0366d6; */
 			background-color: #bddcff;
 			text-align:justify;
 			padding: 15px;
+			}
+
+			.url_list_error {
+			background-color: #ffbdbd;
+			}
+
+			.url_list_text {
+				/* width: 60%; */
+				word-break: break-all;
 			}
 
 			.li_bu{
@@ -48,6 +57,16 @@
 			border : solid rgb(0, 0, 255);
 			border-width: 1px 0px 0px 0px;
 			}
+
+			.list_category {
+				font-size: 15px;
+				font-weight: bold;
+				background-color: white;
+			}
+			.list_category > td{
+				padding: 5px 15px;
+			}
+			
 			
 		</style>
 	</head>
@@ -71,8 +90,23 @@
 		<div id="output">URL List </div>
 		<div>
 			<table id="list">
+				<tr class="list_category"> 
+					<td class="url_list_text">url</td> 
+					<td width="10%">크롤링 시간</td> 
+					<td width="10%">url status</td>
+					<td width="10%">단어 수</td> 
+					<td width="10%">유사도분석</td> 
+					<td width="10%">단어분석</td> 
+				</tr>
 				{% for t in data %}
-				<tr class='url_list'> <td class='url_list_text'>{{t['url']}}</td> <td>{{t['time']}}</td> <td>{{t['count']}}</td> <td><button class=li_bu onclick=sim_popup()>유사도분석</button></td> <td><button class=li_bu onclick=word_popup()>단어분석</button> </td> </tr>
+				<tr class= {{"url_list" if t['status'] == None else "url_list_error"}} > 
+					<td class='url_list_text'>{{t['url']}}</td> 
+					<td>{{"{0:0.2f}".format(t['time'])}}</td> 
+					<td>{{t['status']}}</td>
+					<td>{{t['count']}}</td> 
+					<td><button class=li_bu onclick=sim_popup()>유사도분석</button></td> 
+					<td><button class=li_bu onclick=word_popup()>단어분석</button> </td> 
+				</tr>
 				{% endfor %}
 			</table>
 		</div>

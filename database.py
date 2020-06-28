@@ -13,6 +13,7 @@ class Document:
 		# 	"tfidf" : "value"
 		# }
 		}
+		self.status = None
 		self.crawl_time = 0
 		#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
 		self.word_count = 0
@@ -92,19 +93,25 @@ class Document:
 
 	#convert to instance <-> index query
 	def convert_to_dict(self):
-		data = {"word_freq":[], "word_count":self.word_count, "url":self.url, "cos_similarity":self.cos_similarity, "crawl_time":self.crawl_time}
+		data = {"word_freq":[], "word_count":self.word_count, "url":self.url, "cos_similarity":{"data":[], "norm":self.cos_similarity["norm"]}, "crawl_time":self.crawl_time, "status":self.status}
 		for word in self.word_freq.keys():
 			info = self.word_freq[word]
 			data["word_freq"].append( {"word":word, "count":info['count'], 'tfidf':info['tfidf']} )
+		for similarity in self.cos_similarity['data'].keys():
+			data["cos_similarity"]["data"].append( {"url":similarity, "value":self.cos_similarity['data'][similarity]})
 		return data
 
 def convert_to_document(data:dict):
 	doc = Document(data['url'])
-	doc.cos_similarity = data['cos_similarity']
+	# doc.cos_similarity = data['cos_similarity']
 	doc.word_freq = {}
 	doc.crawl_time = data['crawl_time']
+	doc.status = data['status']
 	for info in data['word_freq']:
 		doc.word_freq[info['word']] = {"count":info['count'], 'tfidf':info['tfidf']}
+	doc.cos_similarity['norm'] = data['cos_similarity']['norm']
+	for info in data['cos_similarity']["data"]:
+		doc.cos_similarity['data'][info['url']] = info['value']
 	return doc
 
 

@@ -3,7 +3,11 @@
 	"cos_similarity" : {
 		"properties" : {
 			"data" : {
-				"type" : "object"
+				"type" : "nested",
+				"properties" : {
+					"url" : { "type" : "text" },
+					"value" : { "type" : "long" }
+				}
 			},
 			"norm" : {
 				"type" : "long"
@@ -18,6 +22,9 @@
 				"ignore_above" : 256
 			}
 		}
+	},
+	"status" : {
+		"type" : "text"
 	},
 	"word_count" : {
 		"type" : "long"
