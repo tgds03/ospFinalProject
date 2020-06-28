@@ -1,21 +1,19 @@
 #!/bin/bash
 
 sudo apt-get install python3-pip
-sudo pip install flask
-sudo pip install re
-sudo pip install sys
-sudo pip install math
-sudo pip install json
-sudo pip install numpy
-sudo pip install time
-sudo pip install requests
-sudo pip install bs4
+sudo pip3 install flask
+sudo pip3 install numpy
+sudo pip3 install time
+sudo pip3 install requests
+sudo pip3 install bs4
 
 mkdir -p ospFinalProject/templates
-tar -zxvf ì••ì¶•íŒŒì¼ëª….tar.gz -C /ospFinalProject	//ospFinalProject ë””ë ‰í† ë¦¬ì— ì••ì¶• í’€ê¸°
+//tar -zxvf ¾ĞÃàÆÄÀÏ¸í.tar.gz -C /ospFinalProject
 cd ospFinalProject
-mv osp.html similar_analysis_pop.html word_analysis_pop.html ospFinalProject/templates/
-./elasticsearch-7.6.2/bin/elasticsearch -d
+mv osp.html similar_analysis_pop.html word_analysis_pop.html ospFinalProject/templates
+cd ../elasticsearch-7.6.2
+./bin/elasticsearch -d
+cd ../ospFinalProject
+python app.py
 sudo chmod 755 app.py
 ./app.py
-
