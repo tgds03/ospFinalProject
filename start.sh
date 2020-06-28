@@ -8,7 +8,7 @@ sudo pip3 install requests
 sudo pip3 install bs4
 
 mkdir -p ospFinalProject/templates
-//tar -zxvf ¾ĞÃàÆÄÀÏ¸í.tar.gz -C /ospFinalProject
+//tar -zxvf FILENAME.tar.gz -C /ospFinalProject     FILENAMEì— íŒŒì¼ ì´ë¦„ ì¶”ê°€í•˜ê¸°
 cd ospFinalProject
 mv osp.html similar_analysis_pop.html word_analysis_pop.html ospFinalProject/templates
 cd ../elasticsearch-7.6.2
