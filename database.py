@@ -13,9 +13,9 @@ class Document:
 		# 	"tfidf" : "value"
 		# }
 		}
+		#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
 		self.status = None
 		self.crawl_time = 0
-		#in database, word_freq = [ {'word':(word), 'count':(value), 'tfidf':(value)} ]
 		self.word_count = 0
 		self.cos_similarity = {
 			"norm" : -1,
@@ -123,6 +123,7 @@ class DocumentES(Elasticsearch):
 		"total_word_freq" : {
 			# "word" : "count"
 		},
+		#in database, total_word_freq = [ {'word':(word), 'count':(value)} ]
 		"total_word_kinds" : 0,
 		"total_word_count" : 0,
 		"url_list" : [],
@@ -177,13 +178,22 @@ class DocumentES(Elasticsearch):
 
 	#update total data in database
 	def update_total(self):
-		return self.es.index(index='total', body=self.total_info, id='total')
+		data = {"total_word_kinds":self.total_info["total_word_kinds"], "total_word_count":self.total_info["total_word_count"], "url_list":self.total_info["url_list"]}
+		data["total_word_freq"] = []
+		for word in self.total_info["total_word_freq"].keys():
+			data["total_word_freq"].append({"word" : word, "count" : self.total_info["total_word_freq"][word]})
+		return self.es.index(index='total', body=data, id='total')
 
 	#load total data in database
 	def load_total(self):
 		res = self.es.get(index = 'total', id = 'total', filter_path='_source')
 		res = res['_source']
-		self.total_info = res.copy()
+		self.total_info["total_word_kinds"] = res["total_word_kinds"]
+		self.total_info["total_word_count"] = res["total_word_count"]
+		self.total_info["url_list"] = res["url_list"]
+		self.total_info["total_word_freq"] = {}
+		for word in res["total_word_freq"]:
+			self.total_info["total_word_freq"][word["word"]] = word["count"]
 
 
 from single_url_crawl import single_url_crawl
@@ -205,8 +215,8 @@ if __name__=="__main__":
 		doc_es.insert_document(doc)
 
 	doc_es.update_total()
-	total = doc_es.es.get(index='total', id='total', filter_path='_source')['_source']
-
+	doc_es.load_total()
+	doc_es.update_total()
 
 	#update urls similarity, tf-dif
 	#maybe it will be executed by click buttons 
