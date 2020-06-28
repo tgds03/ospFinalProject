@@ -21,7 +21,7 @@ def generate_listdata():
 
 @app.route('/')
 def index():
-	return render_template('osp.html')
+	return render_template('osp.html', data=generate_listdata())
 
 @app.route('/addurl', methods=['POST'])
 def addurl():

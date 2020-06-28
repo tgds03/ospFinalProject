@@ -6,10 +6,9 @@ sudo pip3 install numpy
 sudo pip3 install requests
 sudo pip3 install bs4
 
-mkdir -p ospFinalProject/templates
-tar -zxvf ospFinal.tar.gz
+tar -zxvf ospFinalProject.tar.gz -C ./
 
 sudo service elasticsearch start
-cd ospFinalProject
+cd ospFinalProject/
 sudo chmod 755 app.py
-./app.py
+flask run
