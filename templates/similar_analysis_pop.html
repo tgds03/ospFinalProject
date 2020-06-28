@@ -6,9 +6,17 @@
 
 <body>
 	<h1> Cosine similarity 를 기준으로 했을 때 가장 유사한 url top3 </h1>
-	<div> </div>
-	<div> </div>
-	<div> </div>
+	<div>now url: {{data[0]}}</div>
+	<table>
+		<tr>
+			<td>similarity</td><td>id</td><td>url</td>
+		</tr>
+		{% for t in data[1] %}
+		<tr>
+			<td>{{ "{0:0.6f}".format(t[2]) }}</td><td>{{t[0]}}</td><td>{{t[1]}}</td>
+		</tr>
+		{% endfor %}
+	</table>
 </body>
 </html>
 

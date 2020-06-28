@@ -94,6 +94,7 @@
 		<div>
 			<table id="list">
 				<tr class="list_category"> 
+					<td width="5%">id</td>
 					<td class="url_list_text">url</td> 
 					<td width="10%">크롤링 시간</td> 
 					<td width="20%">url status</td>
@@ -103,12 +104,13 @@
 				</tr>
 				{% for t in data %}
 				<tr class= {{"url_list" if t['status'] == None else "url_list_error"}} > 
+					<td>{{t["idx"]}}</td>
 					<td class='url_list_text'>{{t['url']}}</td> 
 					<td>{{"{0:0.2f}(s)".format(t['time'])}}</td> 
 					<td>{{t['status'] if t['status'] != None else 'Success'}}</td>
 					<td>{{t['count']}}</td> 
-					<td><button class=li_bu onclick=sim_popup()>유사도분석</button></td> 
-					<td><button class=li_bu onclick=word_popup()>단어분석</button> </td> 
+					<td><button id={{"sim"+t["idx"]}} class="li_bu" onclick="sim_popup(this.id)">유사도분석</button></td> 
+					<td><button id={{"word"+t["idx"]}} class="li_bu" onclick="word_popup(this.id)">단어분석</button></td> 
 				</tr>
 				{% endfor %}
 			</table>
@@ -116,6 +118,12 @@
 
 		<div class='hidden'>
 			{{error}}
+		</div>
+
+		<div class='hidden'>
+			<form method="POST" id="popupFrm" class="hidden">
+				<input type="hidden" id="analysingUrl" name="idx">
+			</form>
 		</div>
 		<script>
 
@@ -169,15 +177,34 @@
 
 				var urllist = reader.result.split('\n');
 				hiddenField.setAttribute("value", urllist);
-				console.debug(urllist)
 
 				form.appendChild(hiddenField);
 				document.body.appendChild(form);
 				form.submit();
 			}
          }
-		 function sim_popup() { window.open("similar_analysis_pop.html", "similar_popup", "width=400, height=300, left=100, top=50"); }
-		 function word_popup() { window.open("word_analysis_pop.html", "word_popup", "width=400, height=300, left=100, top=50"); }
+		//  function sim_popup() { window.open("similar_analysis_pop.html", "similar_popup", "width=400, height=300, left=100, top=50"); }
+		//  function word_popup() { window.open("word_analysis_pop.html", "word_popup", "width=400, height=300, left=100, top=50"); }
+		function sim_popup(btnid) {
+			var urlvalue = document.getElementById(btnid).parentElement.parentElement.children[0].textContent
+			var newWindow = window.open("", "similar_popup", "width=800, height=600");
+			var form = document.getElementById("popupFrm");
+			var input = document.getElementById("analysingUrl");
+			form.action = "/similar"
+			form.target = "similar_popup";
+			input.value = urlvalue;
+			form.submit();
+		}
+		function word_popup(btnid) {
+			var urlvalue = document.getElementById(btnid).parentElement.parentElement.children[0].textContent
+			var newWindow = window.open("", "word_popup", "width=800, height=600");
+			var form = document.getElementById("popupFrm");
+			var input = document.getElementById("analysingUrl");
+			form.action = "/analysis"
+			form.target = "word_popup";
+			input.value = urlvalue;
+			form.submit();
+		}
 		 
 		</script>
 

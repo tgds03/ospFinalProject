@@ -14,6 +14,9 @@ except Exception as e:
 urls = []
 documents = []
 
+def generate_listdata():
+	return [{"idx":str(i+1), "url":d.url, "time":d.crawl_time, "count":d.word_count, "status":d.status} for i, d in enumerate(documents)]
+
 @app.route('/')
 def index():
 	return render_template('osp.html')
@@ -38,7 +41,7 @@ def addurl():
 			crawled = crawls.single_url_crawl(url)
 		except Exception as e:
 			doc.status = str(e)
-			doc.status = doc.status[0:doc.status.find(":")]
+			doc.status = doc.status[0:30]+"..."
 		
 		#if url is accessible, record result
 		if doc.status == None:
@@ -51,9 +54,8 @@ def addurl():
 			total_es.insert_document(doc)
 			total_es.update_total()
 	
-	data = [{"url":d.url, "time":d.crawl_time, "count":d.word_count, "status":d.status} for d in documents]
 
-	return render_template('osp.html', data=data, error=error)
+	return render_template('osp.html', data=generate_listdata(), error=error)
 
 @app.route('/addurls', methods=['POST'])
 def addurls():
@@ -71,7 +73,7 @@ def addurls():
 			crawled = crawls.single_url_crawl(url)
 		except Exception as e:
 			doc.status = str(e)
-			doc.status = doc.status[0:doc.status.find(":")]
+			doc.status = doc.status[0:30]+"..."
 		
 		#if url is accessible, record result
 		if doc.status == None:
@@ -85,13 +87,36 @@ def addurls():
 			total_es.update_total()
 	
 	#print recorded until now
-	data = [{"url":d.url, "time":d.crawl_time, "count":d.word_count, "status":d.status} for d in documents]
-	return render_template('osp.html', data=data)
+	return render_template('osp.html', data=generate_listdata())
 
-# @app.route('/similar', method=['POST'])
-# def print_similar():
+@app.route('/similar', methods=['POST'])
+def print_similar():
+	docIdx = request.form['idx']
+	doc = documents[int(docIdx)-1]
+	cosSimil = []
+	for i, otherdoc in enumerate(documents):
+		if doc == otherdoc: continue
+		sim = doc.calculate_similarity(otherdoc)
+		total_es.insert_document(otherdoc)
+		cosSimil.append( (i+1, otherdoc.url, sim))
+	total_es.insert_document(doc)
 
-# @app.route('/analysis', method=['POST'])
-# def print_analysis():
+	cosSimil = sorted(cosSimil, key=lambda x : -x[2])
+	return render_template('similar_analysis_pop.html', data=(doc.url, cosSimil[0:3]))
 
-if __name__=="__main__": app.run(debug=True)
+@app.route('/analysis', methods=['POST'])
+def print_analysis():
+	docIdx = request.form['idx']
+	doc = documents[int(docIdx)-1]
+	doc.calculate_tfidf(total_es)
+
+	wordfreq = []
+	for word in doc.word_freq.keys():
+		wordfreq.append( (word, doc.word_freq[word]['tfidf']) )
+	wordfreq= sorted(wordfreq, key=lambda x: -x[1] )
+
+	res = [ {"rank":i, "word":wordfreq[i][0], "tfidf":wordfreq[i][1]} for i in range(min(len(wordfreq), 10)) ]
+	return render_template('word_analysis_pop.html', data=(doc.url, res))
+
+
+if __name__=="__main__":  	app.run(debug=True)
