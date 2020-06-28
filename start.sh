@@ -11,8 +11,7 @@ mkdir -p ospFinalProject/templates
 //tar -zxvf FILENAME.tar.gz -C /ospFinalProject     FILENAME에 파일 이름 추가하기
 cd ospFinalProject
 mv osp.html similar_analysis_pop.html word_analysis_pop.html ospFinalProject/templates
-cd ../elasticsearch-7.6.2
-./bin/elasticsearch -d
+sudo service elasticsearch start
 cd ../ospFinalProject
 sudo chmod 755 app.py
 python ./app.py
