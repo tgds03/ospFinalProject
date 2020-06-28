@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -94,9 +95,11 @@ def addurls():
 def print_similar():
 	docIdx = request.form['idx']
 	doc = documents[int(docIdx)-1]
+	if doc.status != None: 
+		return render_template('similar_analysis_pop.html', data=(doc.url, []))
 	cosSimil = []
 	for i, otherdoc in enumerate(documents):
-		if doc == otherdoc: continue
+		if doc == otherdoc or otherdoc.status!=None: continue
 		sim = doc.calculate_similarity(otherdoc)
 		total_es.insert_document(otherdoc)
 		cosSimil.append( (i+1, otherdoc.url, sim))
@@ -109,6 +112,8 @@ def print_similar():
 def print_analysis():
 	docIdx = request.form['idx']
 	doc = documents[int(docIdx)-1]
+	if doc.status != None: 
+		return render_template('word_analysis_pop.html', data=(doc.url, []))
 	doc.calculate_tfidf(total_es)
 
 	wordfreq = []
