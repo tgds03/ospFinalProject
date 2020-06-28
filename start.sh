@@ -14,6 +14,5 @@ mv osp.html similar_analysis_pop.html word_analysis_pop.html ospFinalProject/tem
 cd ../elasticsearch-7.6.2
 ./bin/elasticsearch -d
 cd ../ospFinalProject
-python app.py
 sudo chmod 755 app.py
-./app.py
+python ./app.py
